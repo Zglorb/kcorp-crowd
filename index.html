@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/twitch-js@2.0.0-beta.33/dist/twitch.js"></script>
+  <title>Document</title>
+</head>
+<body>
+  <button onclick="higher()">Monter le son</button>
+  <button onclick="lower()">Baisser le son</button>
+  <script>
+    const {
+      chat,
+      api
+    } = new TwitchJs({
+      log: { enabled: false },
+    });
+
+    let ambiance = new Audio('./ambiant.mp3');
+    ambiance.loop = true;
+    ambiance.volume = 0;
+
+    let goal = new Audio('./goal.mp3');
+    goal.volume = 0;
+    goal.loop = true;
+
+    ambiance.play();
+    goal.play();
+    let mainVolume = 0.3;
+    function lower(){
+      if(mainVolume > 0) mainVolume -= 0.1
+      console.log(mainVolume)
+    }
+    function higher(){
+      if(mainVolume < 1) mainVolume += 0.1
+      console.log(mainVolume)
+    }
+    let counter = 0;
+    let maxEmotes = 150;
+    let maxSpeed = 3;
+    let lastEmotes = 0;
+    let emotesPerSec = 0;
+
+    setInterval(() => {
+      emotesPerSec = counter/10;
+      let speed = (emotesPerSec - lastEmotes) / 10;
+      if (emotesPerSec > maxEmotes) maxEmotes = emotesPerSec;
+      if (speed > maxSpeed) maxSpeed = speed;
+      if (speed < 0) speed = 0;
+      ambiance.volume = (emotesPerSec/maxEmotes) * mainVolume;
+      goal.volume = (speed/maxSpeed) * mainVolume;
+      console.log(speed);
+    }, 1000)
+
+    chat.connect().then(globalUserState => {
+      chat.join('kamet0').then(channelState => {
+        chat.on('*', ({message}) => {
+          let firstWord = message.split(' ')[0]
+          for(word of message.split(' ')){
+            if (1){
+              counter++
+              setTimeout(() => { counter--; lastEmotes = emotesPerSec}, 10000)
+            }
+          }
+        })
+      })
+    })
+  </script>
+</body>
+</html>
